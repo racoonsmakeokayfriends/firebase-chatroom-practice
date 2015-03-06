@@ -1,74 +1,51 @@
-
 $(document).ready(function() {
-  var MAX_PLAYERS = 4;
 
+/* =========================================================
+                    CONSTANTS & GLOBALS
+   ========================================================= */
+
+  var MAX_USERS = 4;
   // CREATE A REFERENCE TO FIREBASE
   var fb = new Firebase('https://fbchatroompractice.firebaseio.com/');
   var all_users_ref = fb.child('all_users')
-  // var lobby_list_ref = fb.child('lobby_list');
   var chat_rooms_ref = fb.child('chat_room_list');
 
   // REGISTER DOM ELEMENTS
-  var $username_field = $('#username_input');
-  var $lobby_select_field = $('#lobby_type_input');
-  var $enter_lobby_btn = $('#enter_lobby_btn');
-  var $validation_text = $('.validation_text');
+  var $PAGE_SIGNIN = $('#page-signin');
+  var $PAGE_LOBBY = $('#page-lobby');
+  var $PAGE_CHATROOM = $('#page-chatroom');
 
-  var $lobby_list = $('.available_user_list');
+  var $SIGNIN_FIELD_USERNAME = $('#page-signin #username_field');
+  var $SIGNIN_FIELD_LOBBY_TYPE = $('#page-signin #lobby_type_field');
+  var $SIGNIN_BTN_ENTER_LOBBY = $('#page-signin #enter_lobby_btn');
+  var $SIGNIN_MESSAGE = $('#signin_msg');
 
-  var $signin_container = $('.signin');
-  var $lobby_container = $('.lobby');
+  var $LOBBY_BTN_PROPOSE_CHAT = $('#page-lobby #propose_chat_btn');
+  var $LOBBY_LIST_USERS = $('#page-lobby #present_users');
+  var $LOBBY_MD_INVITATION = $('#page-lobby #md-invitation');
 
+  var $CHATROOM_USER_LIST = $('#page-chatroom #chatroom_user_list');
+
+  // Some globals for this user
   var my_name = 'noone';
   var my_data = {id:'',name:'',status:''};
+  var PLACEHOLDER_FLAG = 'sdfjweute8rteijdkfvnm';
+
+  /*------------
+       SIGNIN  
+    ------------*/
 
   //// USER ATTEMPTS TO ENTER LOBBY
-  $enter_lobby_btn.click(function () {
-    if ($username_field.val() == '') {
-      // $validation_text.text('That username is taken by another user, please choose another.');
-      $validation_text.text('You must specify a username');
+  $SIGNIN_BTN_ENTER_LOBBY.click(function () {
+    if ($SIGNIN_FIELD_USERNAME.val() == '') {
+      $SIGNIN_MESSAGE.text('You must specify a username');
       return;
     }
-    var username = $username_field.val();
+    var username = $SIGNIN_FIELD_USERNAME.val();
     var user_data = {name:username,status:'lobby'};
     my_name = username;
-    // todo: check this username doesnt already exist
-    $signin_container.addClass('hidden');
-    $lobby_container.removeClass('hidden');
-
-    // lobby_list_ref.push({name:username});
     try_create_user(username,user_data);
   });
-
-  //// USER SELECTS/DESELECTS A PLAYER
-  $(document).on('click','.lobby li.user',function (argument) {
-    $(this).toggleClass('selected');
-    $(this).children('i').toggleClass('fa-check-square-o');
-    $(this).children('i').toggleClass('fa-square-o');
-  });
-
-  //// USER ATTEMPTS TO START A CHAT
-  $('#propose_chat_btn').click(function () {
-    // check that no more than X users are chosen
-    if ($lobby_list.children('li.user.selected').length > MAX_PLAYERS) {
-      // todo: let the user know this cant happen
-      return;
-    }
-    // todo: ask the selecting users if they consent
-    // attempt to create a chat room
-    var user_list = [];
-    user_list.push(my_data)
-    $lobby_list.children('li.user.selected').each(function () {
-      user_list.push({id:$(this).attr('id'),name:$(this).children('.username').text(),status:'lobby'});
-    });
-    invite_users(user_list);
-    try_create_chatroom(user_list);
-  });
-
-  function get_user_id(snapshot) {
-    return snapshot.key().replace(/[^a-z0-9\-\_]/gi,'');
-  }
-
 
   function try_create_user(username,user_data) {
     all_users_ref.child(username).transaction(function(current_user_data) {
@@ -78,6 +55,17 @@ $(document).ready(function() {
     }, function(error, committed) {
       user_created(username, committed);
     });
+  };
+
+  function user_created(username,success) {
+    if (!success) {
+      $SIGNIN_MESSAGE.text('That username is taken by another user, please choose another.');
+      open_page($PAGE_SIGNIN);
+      my_name = '';
+      return;
+    }
+    open_page($PAGE_LOBBY);
+    
 
     // this snippet makes it so the user is deleted when they leave the page
     // Get a reference to my own presence status.
@@ -92,21 +80,42 @@ $(document).ready(function() {
 
     all_users_ref.child(username).on('child_changed',function (snapshot) {
       if (snapshot.val().status == 'invited') {
-        $('#invitation').removeClass('hidden')
+        $LOBBY_MD_INVITATION.removeClass('hidden')
       }
     });
   };
 
-  function user_created(username,success) {
-    if (!success) {
-      $validation_text.text('That username is taken by another user, please choose another.');
-      $signin_container.removeClass('hidden');
-      $lobby_container.addClass('hidden');
-      my_name = '';
-    } else {       
-      // user successfully created
+  /*------------
+        LOBBY  
+    ------------*/
+
+  //// USER SELECTS/DESELECTS A PLAYER
+  $(document).on('click','#page-lobby #present_users li.user',function (argument) {
+    $(this).toggleClass('selected');
+    $(this).children('i').toggleClass('fa-check-square-o');
+    $(this).children('i').toggleClass('fa-square-o');
+  });
+
+  //// USER ATTEMPTS TO START A CHAT
+  $LOBBY_BTN_PROPOSE_CHAT.click(function () {
+    // check that no more than X users are chosen
+    if ($LOBBY_LIST_USERS.children('li.user.selected').length > MAX_USERS) {
+      // TODO
+      return;
     }
-  }
+    // create a list of all selected users
+    var user_list = [];
+    user_list.push(my_data)
+    $LOBBY_LIST_USERS.children('li.user.selected').each(function () {
+      user_list.push({id:$(this).attr('id'),name:$(this).children('.username').text(),status:'lobby'});
+    });
+
+    invite_users(user_list);
+    try_create_chatroom(user_list);
+  });
+
+
+
 
   //// update our lobby list when a user enters
   all_users_ref.on('child_added',function (snapshot) {
@@ -130,7 +139,7 @@ $(document).ready(function() {
     user_element.append(name_element);
 
     //ADD PLAYER
-    $lobby_list.append(user_element);
+    $LOBBY_LIST_USERS.append(user_element);
 
     //SCROLL TO BOTTOM OF MESSAGE LIST
     //messageList[0].scrollTop = messageList[0].scrollHeight;
@@ -138,25 +147,32 @@ $(document).ready(function() {
 
   //// update our lobby list when a user leaves
   all_users_ref.on('child_removed', function(snapshot) {
-    $('.available_user_list').children('#' + get_user_id(snapshot))
-      .remove();
+    $LOBBY_LIST_USERS.children('#' + get_user_id(snapshot)).remove();
   });
 
+  //// update our lobby list when a user changes
   all_users_ref.on('child_changed',function(snapshot,prev_child_name) {
-    if (snapshot.val().status != 'lobby') {
-      $('.available_user_list').children('#' + get_user_id(snapshot))
-      .remove();
+    // ensure the lobby list is up to date
+    if (snapshot.val().status == 'lobby') {
+      $LOBBY_LIST_USERS.children('#' + get_user_id(snapshot)).show();
     }
+    if (snapshot.val().status != 'lobby') {
+      $LOBBY_LIST_USERS.children('#' + get_user_id(snapshot)).hide();
+    }
+
     // check if its us&we got a invitation
     if (get_user_id(snapshot) == my_data.id && snapshot.val().status == 'invited') {
-      $('#invitation-md').removeClass('hidden');
+      $LOBBY_MD_INVITATION.removeClass('hidden');
     }
   });
 
 
   function invite_users(user_list) {
+    var chatroom_key = chat_rooms_ref.push({'date_created':'now'}).key();
+    chat_rooms_ref.child(chatroom_key).child('user_list').child(PLACEHOLDER_FLAG).set('');
     for (var i = 0; i < user_list.length; i++) {
       all_users_ref.child(user_list[i].id).child('status').set('invited');
+      all_users_ref.child(user_list[i].id).child('chatroom_key').set(chatroom_key);
     };
   }
 
@@ -172,16 +188,72 @@ $(document).ready(function() {
     // $('.chat_room').removeClass('hidden');
   }
 
-  $('.md .btn.close').click(function() {
+  function join_chatroom() {
+    var my_chatroom_ref = get_my_chatroom_ref();
+
+    my_chatroom_ref.child('user_list').child(my_data.id).set({'time_entered':'now'});
+    open_page($PAGE_CHATROOM);
+
+    my_chatroom_ref.child('user_list').on('child_added', function (snapshot) {
+      if (get_user_id(snapshot) == PLACEHOLDER_FLAG) return;
+      var data = snapshot.val();      
+      var user_element = $('<li class="user">');
+      user_element.attr('val',get_user_id(snapshot));
+      user_element.text(get_user_id(snapshot));
+      $CHATROOM_USER_LIST.append(user_element);
+    }); 
+
+    my_chatroom_ref.child('user_list').on('child_removed', function (snapshot) {
+      $CHATROOM_USER_LIST.children('[val="'+get_user_id(snapshot)+'"]').remove();
+      // delete the entire chatroom when everyone leaves
+      // note, it needs to be 1/we have the placeholder because if we get to 0, the userlist will delete itself
+      my_chatroom_ref.child('user_list').once('value',function (snapshot) {
+        if (snapshot.numChildren() == 1) {
+          my_chatroom_ref.remove();
+        }
+      });
+    });
+  }
+
+
+  $('#accept_invite_btn').click(function () {
+    all_users_ref.child(my_data.id).child('status').set('chatroom');
+    join_chatroom();
+  });
+  $('#reject_invite_btn').click(function () {
+    all_users_ref.child(my_data.id).child('status').set('lobby');
+  });
+
+  $('#exit_chatroom_btn').click(function() {
+    var my_chatroom_ref = get_my_chatroom_ref();
+    my_chatroom_ref.child('user_list').child(my_data.id).remove();
+    open_page($PAGE_LOBBY);
+  });
+
+/* =========================================================
+                  GENERAL FUNCTIONALITY/HELPER
+   ========================================================= */
+
+  $('.md .md-close').click(function() {
     $(this).parents('.md').addClass('hidden');
   });
 
-  $('#invite-yes-btn').click(function () {
-    all_users_ref.child(my_data.id).child('status').set('accepted');
-  });
-  $('#invite-no-btn').click(function () {
-    all_users_ref.child(my_data.id).child('status').set('rejected');
-  });
+  function open_page($page_to_open) {
+    $('.page').addClass('hidden');
+    $page_to_open.removeClass('hidden');
+  }
+
+  function get_user_id(snapshot) {
+    return snapshot.key().replace(/[^a-z0-9\-\_]/gi,'');
+  }
+
+  function get_my_chatroom_ref() {
+    var my_user_ref = all_users_ref.child(my_data.id);
+    var chatroom_key;
+    my_user_ref.once('value',function(snapshot) { chatroom_key = snapshot.val()['chatroom_key']; });
+    return chat_rooms_ref.child(chatroom_key);
+  }
+
 });  
 
 
@@ -189,5 +261,11 @@ $(document).ready(function() {
   TODO:
   [ ] users leaving
   [ ] the self being in the lobby list
-*/
+  [ ] if i accept, then i join the chatroom
 
+  [x] deleting empty chatrooms
+  [ ] sending messages
+  [ ] removing users who leave the chatroom
+      [x] with button
+      [ ] on disconnect
+*/

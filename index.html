@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <title>firebase chat-signin</title>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="fb_practice.css" />
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/chroma-js/0.5.7/chroma.min.js"></script>    
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
+    <script src="https://cdn.firebase.com/js/client/2.0.4/firebase.js"></script>
+    <script src="fb_practice.js"></script>
+  </head>
+  <body>
+    <header>Firebase Chat Demo</header>
+    <!-- +==================== SIGNING IN ====================+ -->
+    <div class="page" id="page-signin">
+      <div id="signin_msg"></div>
+      <input type="text" id="username_field" placeholder="username">
+      <select id="lobby_type_field">
+        <option value="strangers">chat with strangers</option>
+        <option value="friends">chat with friends</option>
+      </select>
+      <button id="enter_lobby_btn">enter lobby</button>
+    </div>
+
+
+    <!-- +====================== LOBBY =======================+ -->
+    <div class="page hidden" id="page-lobby">
+      <h1>Lobby!</h1>
+      <button id="propose_chat_btn">propose chat with:</button>
+      <ul id="present_users">
+      </ul>
+      <!-- ===== MD: INVITATION ===== -->
+      <div class="invite md hidden" id="md-invitation">
+        <div class="md-content">          
+          <div class="md-hd">
+            InvitationStuffbutts
+          </div>
+          Do you want to be invited to a thing?
+          <button class="btn md-close" id="accept_invite_btn">yes</button>
+          <button class="btn md-close" id="reject_invite_btn">no</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- +==================== CHAT ROOM =====================+ -->
+    <div class="page hidden" id="page-chatroom">
+      <h1>Chatty!</h1>
+      <ul id="chatroom_user_list">
+      </ul>
+      <button id="exit_chatroom_btn">exit chatroom</button>
+    </div>    
+  </body>
+</html>

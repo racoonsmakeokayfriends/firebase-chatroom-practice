@@ -1,0 +1,89 @@
+
+*, *:after, *:before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+/* body */
+/* leaderboard */
+body {
+  background-color: #373633;
+  font-family: "Lato", Calibri, Arial, sans-serif;
+  color: #ffffff;
+}
+
+header {
+  font-size: 2.0em;
+}
+
+.page {
+  width:75%;
+  height: 500px;
+  background-color: rgba(0,0,0,0.3);
+  text-align: center;
+  margin:auto;
+  padding:100px;
+}
+
+ul {
+  list-style: none;
+}
+ul li.user i {
+  margin-right: 5px;
+}
+.container input {
+  border-radius: 3px;
+  padding: 0px 10px;
+  height: 30px;
+  font-size: 18px;
+  font-weight: normal;
+  outline: none;
+  border: 1px solid #CCC;
+}
+
+
+/***********************************
+ *           MODAL STUFF           *
+ ***********************************/
+
+.md {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.7);
+  z-index: 100;
+}
+
+.md-content {
+  background-color:#40805C;
+  color: #ffffff;
+  position: relative;
+  width: 500px;
+  margin: 100px auto;
+  padding:20px;
+}
+
+/*------------
+    Variants  
+  ------------*/
+
+.md-hd {
+  margin-bottom: 10px;
+  padding: 0.4em;
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: 600;
+  letter-spacing: 1px;
+  background-color: #40805C;
+}
+
+.md-ft {
+  /* TODO */
+}
+
+.hidden {
+  display: none;
+}
