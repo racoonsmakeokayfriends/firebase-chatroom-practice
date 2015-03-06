@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <title>firebase chat</title>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="battleship.css" />
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/chroma-js/0.5.7/chroma.min.js"></script>    
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
+    <script src="https://cdn.firebase.com/js/client/2.0.4/firebase.js"></script>
+    <script src="fb_practice.js"></script>
+    <style type="text/css">
+      *, *:after, *:before {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+
+      /* body */
+      /* leaderboard */
+      body {
+        background-color: #373633;
+        font-family: "Lato", Calibri, Arial, sans-serif;
+      }
+
+      .hide {
+        display: none;
+      }
+
+      .container {
+        width: 500px;
+        margin: 40px auto 0px auto;
+        padding: 20px;
+        border-radius: 5px;
+        background-color: #ffffff;
+        overflow: auto;
+        color: black;
+      }
+
+      .container table {
+        border-radius: 3px;
+        margin-bottom: 20px;
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .container table th {
+        background: #eee;
+        font-size: 16px;
+        padding: 5px 10px;
+        text-align: left;
+      }
+
+      .container table td {
+        padding: 5px;
+        background-color: none;
+      }
+
+      .container table td em {
+        font-style: normal;
+        font-weight: bold;
+      }
+
+      .container table tr:first-child td {
+        background: green;
+      }
+
+      .container input {
+        border-radius: 3px;
+        padding: 0px 10px;
+        height: 30px;
+        font-size: 18px;
+        font-weight: normal;
+        outline: none;
+        border: 1px solid #CCC;
+      }
+
+      .container input.lb_name {
+        width: 186px;
+        margin-right: 10px;
+      }
+
+      .container input.lb_score {
+        width: 300px;
+      }
+
+      #highestscore {
+        margin-top: 20px;
+        font-size: 14px;
+      }
+      /***********************************
+       *           MODAL STUFF           *
+       ***********************************/
+
+      .md {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,0.9);
+        z-index: 100;
+      }
+
+      .md-content {
+        background-color:#40805C;
+        color: #ffffff;
+        position: relative;
+        width: 500px;
+        margin: 100px auto;
+        padding:20px;
+      }
+
+      /*------------
+          Variants  
+        ------------*/
+
+      .md-hd {
+        margin-bottom: 10px;
+        padding: 0.4em;
+        text-align: center;
+        font-size: 1.2em;
+        font-weight: 600;
+        letter-spacing: 1px;
+        background-color: #40805C;
+      }
+
+      .md-ft {
+        /* TODO */
+      }
+
+    </style>
+  </head>
+  <body>
+    <header>Firebase Chat Demo</header>
+
+    <!-- where people sign in -->
+    <div class="signin">
+      <span class="validation_text"></span>
+      <input type="text" id="username_input" placeholder="username">
+      <select id="lobby_type_input">
+        <option value="strangers">chat with strangers</option>
+        <option value="friends">chat with friends</option>
+      </select>
+      <button id="enter_lobby_btn">enter lobby</button>
+    </div>
+
+    <!-- where people go to wait -->
+    <div class="lobby hidden">
+      <h1>Lobby!</h1>
+      <button id="propose_chat_btn">propose chat with:</button>
+      <ul class="available_user_list">
+      </ul>
+    </div>
+
+    <!-- 
+    <div class="lobby friends hidden">
+      <div class="available_users">
+      </div>
+    </div> -->
+
+    <!-- where individual chats happen -->
+    <div class="chat_room hidden">
+      <h1>Chat Room</h1>
+  <!--    <div class="chat-input">
+        <label for="nameInput">Username:</label>
+        <input type="text" id="nameInput" placeholder="enter a username...">
+      </div>
+
+      <ul id="example-messages" class="example-chat-messages"></ul>
+
+      <footer>
+        <input type="text" id="messageInput"  placeholder="Type a message...">
+      </footer> -->
+    </div>
+
+    <div class="invite md hidden" id="invitation-md">
+      <div class="md-content">          
+        <div class="md-hd">
+          Invitation
+          <button class="btn close">x</button>
+        </div>
+        Do you want to be invited to a thing?
+        <button class="btn close" id="invite-yes-btn">yes</button>
+        <button class="btn close" id="invite-no-btn">no</button>
+      </div>
+    </div>
+  </body>
+</html>
