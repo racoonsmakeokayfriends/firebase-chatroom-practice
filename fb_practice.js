@@ -147,7 +147,13 @@ $(document).ready(function() {
 
   //// update our lobby list when a user leaves
   all_users_ref.on('child_removed', function(snapshot) {
-    $LOBBY_LIST_USERS.children('#' + get_user_id(snapshot)).remove();
+    var data = snapshot.val();
+    var user_id = get_user_id(snapshot);
+    $LOBBY_LIST_USERS.children('#' + user_id).remove();
+    if (data.status == 'chatroom') {
+      // remove from chatroom
+      chat_rooms_ref.child(data.chatroom_key).child('user_list').child(user_id).remove();
+    }
   });
 
   //// update our lobby list when a user changes
@@ -206,30 +212,59 @@ $(document).ready(function() {
     my_chatroom_ref.child('user_list').on('child_removed', function (snapshot) {
       $CHATROOM_USER_LIST.children('[val="'+get_user_id(snapshot)+'"]').remove();
       // delete the entire chatroom when everyone leaves
+      console.log('someoneleft!')
       // note, it needs to be 1/we have the placeholder because if we get to 0, the userlist will delete itself
       my_chatroom_ref.child('user_list').once('value',function (snapshot) {
+        console.log(snapshot.numChildren())
         if (snapshot.numChildren() == 1) {
           my_chatroom_ref.remove();
         }
       });
     });
+
+    my_chatroom_ref.child('messages').on('child_added', function (snapshot) {
+      var data = snapshot.val();
+      var $msg_element = $('<li class="msg">');
+      var $author_element = $('<strong class="author">');
+      var $timestamp_element = $('<strong class="timestamp">');
+      $author_element.text(data.author);
+      var t = new Date(data.timestamp)
+      $timestamp_element.text(t.toLocaleString());
+      $msg_element.text(data.message).prepend($timestamp_element).prepend($author_element);
+      $('#conversation_container').append($msg_element);
+    });
   }
 
+  function alert_invite_rejection(chatroom_ref) {
+    var alert_data = {'author':'SYS','timestamp':Firebase.ServerValue.TIMESTAMP};
+    alert_data['message'] = 'User ' + my_data.id + ' has rejected your invitation.';
+    chatroom_ref.child('messages').push(alert_data);
+  }
 
   $('#accept_invite_btn').click(function () {
     all_users_ref.child(my_data.id).child('status').set('chatroom');
     join_chatroom();
   });
+
   $('#reject_invite_btn').click(function () {
+    alert_invite_rejection(get_my_chatroom_ref());
     all_users_ref.child(my_data.id).child('status').set('lobby');
   });
 
   $('#exit_chatroom_btn').click(function() {
     var my_chatroom_ref = get_my_chatroom_ref();
     my_chatroom_ref.child('user_list').child(my_data.id).remove();
+    all_users_ref.child(my_data.id).child('status').set('lobby');
     open_page($PAGE_LOBBY);
   });
 
+  $('#send_msg_btn').click(function () {
+    var msg = $('#msg_field').val();
+    $('#msg_field').val('');
+    var my_chatroom_ref = get_my_chatroom_ref();
+    var msg_data = {'message':msg,'author':my_data.id,'timestamp':Firebase.ServerValue.TIMESTAMP};
+    my_chatroom_ref.child('messages').push(msg_data);
+  });
 /* =========================================================
                   GENERAL FUNCTIONALITY/HELPER
    ========================================================= */
@@ -265,7 +300,11 @@ $(document).ready(function() {
 
   [x] deleting empty chatrooms
   [ ] sending messages
+      [ ] timestamp
   [ ] removing users who leave the chatroom
       [x] with button
       [ ] on disconnect
+  [x] when users leave chatroom, they rejoin the lobby
+  [x] alerting users in chatroom when other users reject invite
+
 */
